@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout PIX SaaS</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 16px; background-color: #f6f9fc; }
+      #payment-container { max-width: 500px; margin: 50px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); }
+      #payment-element { margin-bottom: 20px; }
+      #submit-button { background: #5469d4; color: #ffffff; border: none; padding: 12px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; transition: background-color 0.2s; }
+      #submit-button:hover { background: #4353a8; }
+      #submit-button:disabled { background: #adbeff; cursor: not-allowed; }
+      #messages { margin-top: 15px; color: #fa755a; }
+    </style>
+</head>
+<body>
+    <div id="payment-container">
+        <h3>Plano 1: R$ 49,90/mês</h3>
+        <p>Pagamento seguro com Stripe.</p>
+        <form id="payment-form">
+            <div id="payment-element">
+                </div>
+            <button id="submit-button">Pagar Agora</button>
+            <div id="messages" role="alert"></div>
+        </form>
+    </div>
+
+    <script>
+        const stripe = Stripe('{{ publishable_key }}');
+        let elements;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const response = await fetch('/create-payment-intent', { method: 'POST' });
+                const { clientSecret, error } = await response.json();
+
+                if (error) {
+                    document.querySelector("#messages").textContent = error;
+                    return;
+                }
+
+                elements = stripe.elements({ appearance: { theme: 'stripe' }, clientSecret });
+                const paymentElement = elements.create("payment");
+                paymentElement.mount("#payment-element");
+
+            } catch (e) {
+                document.querySelector("#messages").textContent = "Erro ao inicializar o pagamento. Tente novamente.";
+            }
+        });
+
+        document.querySelector("#payment-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            document.querySelector("#submit-button").disabled = true;
+
+            const { error } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: `${window.location.origin}/success`,
+                },
+            });
+
+            if (error) {
+                document.querySelector("#messages").textContent = error.message;
+                document.querySelector("#submit-button").disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\PixProof",
+    "\\PixProof\\client",
+    "\\PixProof\\migrations",
+    "\\PixProof\\public",
+    "\\PixProof\\server"
+  ],
+  "SelectedNode": "\\PixProof\\vite.config.ts",
+  "PreviewInSolutionExplorer": false
+}

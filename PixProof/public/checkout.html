@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - PixConcilia</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+      body { 
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+        font-size: 16px; 
+        background-color: #f6f9fc; 
+        margin: 0;
+        padding: 20px;
+      }
+      #payment-container { 
+        max-width: 500px; 
+        margin: 50px auto; 
+        background: white; 
+        padding: 25px; 
+        border-radius: 8px; 
+        box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); 
+      }
+      #payment-element { 
+        margin-bottom: 20px; 
+      }
+      #submit-button { 
+        background: #5469d4; 
+        color: #ffffff; 
+        border: none; 
+        padding: 12px 16px; 
+        border-radius: 4px; 
+        font-weight: 600; 
+        cursor: pointer; 
+        width: 100%; 
+        font-size: 16px; 
+        transition: background-color 0.2s; 
+      }
+      #submit-button:hover { 
+        background: #4353a8; 
+      }
+      #submit-button:disabled { 
+        background: #adbeff; 
+        cursor: not-allowed; 
+      }
+      #messages { 
+        margin-top: 15px; 
+        color: #fa755a; 
+      }
+      .plan-info {
+        background: #f0f9ff;
+        border: 1px solid #0ea5e9;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+      .security-info {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #e2e8f0;
+        font-size: 14px;
+        color: #64748b;
+      }
+      .loading {
+        text-align: center;
+        padding: 40px;
+      }
+    </style>
+</head>
+<body>
+    <div id="payment-container">
+        <h2 style="text-align: center; color: #1e293b; margin-bottom: 10px;">PixConcilia</h2>
+        <div class="plan-info">
+          <h3 style="margin: 0 0 5px 0;" id="plan-title">Plano Profissional: R$ 99,90/mês</h3>
+          <p style="margin: 0; color: #059669;">✅ 7 dias grátis incluídos</p>
+        </div>
+        
+        <div id="loading" class="loading">
+          <p>Carregando checkout...</p>
+        </div>
+        
+        <form id="payment-form" style="display: none;">
+            <div id="payment-element">
+                <!-- Stripe Elements será montado aqui -->
+            </div>
+            <button id="submit-button">Pagar Agora</button>
+            <div id="messages" role="alert"></div>
+        </form>
+        
+        <div class="security-info">
+          <p>💳 Para teste: 4242 4242 4242 4242</p>
+          <p>🔒 SSL Seguro • ✓ Stripe Verified • 🚫 Cancele a qualquer momento</p>
+        </div>
+    </div>
+
+    <script>
+        // Get plan from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const planId = urlParams.get('plan') || 'professional';
+        
+        const planInfo = {
+            'basic': { name: 'Básico', price: 'R$ 49,90', amount: 4990 },
+            'professional': { name: 'Profissional', price: 'R$ 99,90', amount: 9990 },
+            'enterprise': { name: 'Premium', price: 'R$ 189,90', amount: 18990 }
+        };
+        
+        const currentPlan = planInfo[planId] || planInfo.professional;
+        
+        // Update plan title
+        document.getElementById('plan-title').textContent = 
+            `Plano ${currentPlan.name}: ${currentPlan.price}/mês`;
+
+        let stripe;
+        let elements;
+        let paymentIntentId;
+
+        async function initializeCheckout() {
+            try {
+                // Get Stripe public key from server
+                const keyResponse = await fetch('/api/stripe-public-key');
+                const keyData = await keyResponse.json();
+                
+                if (!keyData.publicKey) {
+                    document.getElementById('messages').textContent = 'Erro: Chave pública do Stripe não encontrada';
+                    return;
+                }
+                
+                // Initialize Stripe with the public key
+                stripe = Stripe(keyData.publicKey);
+                
+                // Get client secret from server
+                const response = await fetch('/api/create-payment-intent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        planId: planId,
+                        amount: currentPlan.amount
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('messages').textContent = data.error;
+                    return;
+                }
+
+                if (!data.clientSecret) {
+                    document.getElementById('messages').textContent = 'Erro: clientSecret não retornado pelo servidor';
+                    return;
+                }
+
+                // Store payment intent ID for status checking
+                paymentIntentId = data.paymentIntentId;
+
+                // Create elements
+                elements = stripe.elements({ 
+                    appearance: { theme: 'stripe' }, 
+                    clientSecret: data.clientSecret 
+                });
+                
+                const paymentElement = elements.create("payment");
+                paymentElement.mount("#payment-element");
+
+                // Show form, hide loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('payment-form').style.display = 'block';
+
+            } catch (e) {
+                console.error('Erro de inicialização:', e);
+                document.getElementById('messages').textContent = 
+                    'Erro ao inicializar pagamento: ' + e.message;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('payment-form').style.display = 'block';
+            }
+        }
+
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', event => {
+            console.error('Unhandled promise rejection:', event.reason);
+            document.getElementById('messages').textContent = 
+                'Erro: ' + (event.reason?.message || 'Erro de pagamento desconhecido');
+            event.preventDefault();
+        });
+
+        async function checkPaymentStatus(paymentIntentId) {
+            try {
+                const response = await fetch(`/api/payment-status/${paymentIntentId}`);
+                const data = await response.json();
+                return data.succeeded;
+            } catch (e) {
+                console.error('Error checking payment status:', e);
+                return false;
+            }
+        }
+
+        document.getElementById('payment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitButton = document.getElementById('submit-button');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processando...';
+
+            try {
+                const { error, paymentIntent } = await stripe.confirmPayment({
+                    elements,
+                    redirect: 'if_required',
+                });
+
+                if (error) {
+                    document.getElementById('messages').textContent = error.message;
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Pagar Agora';
+                } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                    // Payment succeeded
+                    submitButton.textContent = 'Pagamento confirmado!';
+                    document.getElementById('messages').innerHTML = 
+                        '<div style="color: green;">✅ Pagamento realizado com sucesso! Redirecionando...</div>';
+                    
+                    // Wait a moment then redirect to success page
+                    setTimeout(() => {
+                        window.location.href = `/success.html?plan=${planId}`;
+                    }, 2000);
+                }
+            } catch (e) {
+                document.getElementById('messages').textContent = 'Erro no processamento: ' + e.message;
+                submitButton.disabled = false;
+                submitButton.textContent = 'Pagar Agora';
+            }
+        });
+
+        // Initialize when page loads
+        initializeCheckout();
+    </script>
+</body>
+</html>

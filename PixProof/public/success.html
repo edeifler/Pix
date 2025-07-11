@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Confirmado - PixConcilia</title>
+    <style>
+      body { 
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .success-container { 
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        margin: 20px;
+      }
+      .success-icon {
+        width: 80px;
+        height: 80px;
+        background: #10b981;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 40px;
+        color: white;
+      }
+      h1 {
+        color: #1f2937;
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
+      p {
+        color: #6b7280;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+      .access-button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .access-button:hover {
+        background: #5a67d8;
+      }
+      .details {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+      }
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .detail-label {
+        color: #6b7280;
+      }
+      .detail-value {
+        color: #1f2937;
+        font-weight: 500;
+      }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✓</div>
+        
+        <h1>Pagamento Confirmado!</h1>
+        
+        <p>
+            Parabéns! Seu pagamento foi processado com sucesso. 
+            Sua conta PixConcilia foi ativada e você já pode começar 
+            a usar nossa plataforma de reconciliação PIX.
+        </p>
+
+        <div class="details">
+            <div class="detail-item">
+                <span class="detail-label">Plano:</span>
+                <span class="detail-value" id="plan-name">Profissional</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Valor:</span>
+                <span class="detail-value" id="plan-price">R$ 99,90/mês</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Limite mensal:</span>
+                <span class="detail-value" id="plan-limit">500 consultas</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Teste grátis:</span>
+                <span class="detail-value">7 dias incluídos</span>
+            </div>
+        </div>
+
+        <a href="/dashboard" class="access-button">
+            Acessar Minha Conta
+        </a>
+
+        <p style="margin-top: 20px; font-size: 14px; color: #9ca3af;">
+            Você receberá um email de confirmação em breve com os detalhes da sua assinatura.
+        </p>
+    </div>
+
+    <script>
+        // Get plan from URL and update display
+        const urlParams = new URLSearchParams(window.location.search);
+        const planId = urlParams.get('plan') || 'professional';
+        
+        const planInfo = {
+            'basic': { name: 'Básico', price: 'R$ 49,90', limit: '200 consultas' },
+            'professional': { name: 'Profissional', price: 'R$ 99,90', limit: '500 consultas' },
+            'enterprise': { name: 'Premium', price: 'R$ 189,90', limit: '1000 consultas' }
+        };
+        
+        const currentPlan = planInfo[planId] || planInfo.professional;
+        
+        document.getElementById('plan-name').textContent = currentPlan.name;
+        document.getElementById('plan-price').textContent = currentPlan.price + '/mês';
+        document.getElementById('plan-limit').textContent = currentPlan.limit;
+    </script>
+</body>
+</html>
