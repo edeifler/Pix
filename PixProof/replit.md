@@ -551,14 +551,8 @@ The application is configured for deployment on Replit with the following setup:
 
 - July 2, 2025. STRIPE PRODUÇÃO CONFIGURADO COM DADOS REAIS DO USUÁRIO
   - **Chaves do Stripe de produção implementadas**
-    * Chave pública: pk_live_51RdDdOJwOqHr1g8btfbxUTHSeWNVyrR1Ogi0T7CWAnYFgTgunK66LRh9602VHpdGtOu8rJML2eOSCCaGeo9VlBDb00z1DIme1l
-    * Chave secreta: sk_live_51RdDdOJwOqHr1g8btf... (configurada no backend)
     
   - **Price IDs de produção atualizados no sistema**
-    * Plano 1 (R$ 49,90): price_1RgVDiJwOqHr1g8bJAelMXbn
-    * Plano 2 (R$ 99,90): price_1RgVFTJwOqHr1g8bVqX7c3Td
-    * Plano 3 (R$ 189,90): price_1RgVGlJwOqHr1g8bHcUaIIGS
-    
   - **Sistema pronto para processamento de pagamentos reais**
     * Endpoint /api/create-subscription atualizado com Price IDs reais
     * Trial de 7 dias configurado para todos os planos
@@ -573,13 +567,12 @@ The application is configured for deployment on Replit with the following setup:
 
 - July 2, 2025. DEPLOY EM PRODUÇÃO REALIZADO - SISTEMA COMERCIALMENTE ATIVO
   - **Stripe de produção 100% funcional e testado**
-    * Chaves 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 funcionando
+    * Chaves funcionando
     * Sistema processando pagamentos reais em BRL (R$)
     * Customers e Payment Intents sendo criados automaticamente
-    * Teste realizado com sucesso: Customer ID cus_SbjMEpnkWzhOYZ, Payment Intent pi_3RgVtaJwOqHr1g8b11NRpTe3
+    
     
   - **Deploy em produção solicitado e executado**
-    * Sistema PixConcilia comercialmente ativo no domínio www.pixconcilia.com.br
     * Três planos disponíveis: Starter (R$ 49,90), Professional (R$ 99,90), Enterprise (R$ 189,90)
     * Teste gratuito de 7 dias para todos os planos
     * Sistema completo de reconciliação PIX operacional
@@ -746,7 +739,6 @@ The application is configured for deployment on Replit with the following setup:
     * Foco na simplicidade e funcionalidade como solicitado pelo usuário
     
   - **Sistema processando dados reais confirmado funcionando**
-    * OCR extraindo dados verdadeiros dos comprovantes: ADRIANA DE SOUZA (R$ 100,00), PIX CONCLUÍDO (R$ 2.000,00)
     * Extratos bancários sendo processados com transações reais
     * Removidas todas as funções de mock data (generateMockPIXData)
     * Sistema retorna NULL quando OCR falha (sem dados falsos)
